@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <errno.h>
 
+// ! TODO bind client to a static port
+
 void
 align_network_byte_order_ip(uint32_t *ipaddr)
 {
@@ -25,10 +27,14 @@ _is_digit(char c)
 uint32_t
 ipstr_to_nbo(char *ipaddr)
 {
+	if (utils_strcmp(ipaddr, "localhost") == 0) {
+		return (0x0100007F);
+	}
+
 	uint32_t ret_val = 0;
 	uint8_t indexes  = 0;
 	uint8_t counter     ;
-	char octets[4][4];
+	char octets[4][4] = { 0 };
 
 	while (*ipaddr) {
 		if (*ipaddr == '.') {
@@ -121,7 +127,7 @@ argv[3] : Message to be sent\n\n");
 	// #define MSG_DONTWAIT    0x00080 Do not block
 	// #define MSG_EOF         0x00100 Data completes transaction
 	// #define MSG_NOSIGNAL    0x20000 Do not generate SIGPIPE on EOF
-	ssize_t send = sendto(sock, (const void *) send_buffer, utils_strlen(send_buffer), MSG_EOR,
+	ssize_t send = sendto(sock, (const void *) send_buffer, utils_strlen(send_buffer), 0,
 			(const struct sockaddr *)&nm, (socklen_t) sizeof(struct sockaddr_in));
 
 	if (send < 0) {
